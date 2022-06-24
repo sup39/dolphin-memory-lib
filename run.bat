@@ -1,2 +1,0 @@
-python memorylib.py
-pause
