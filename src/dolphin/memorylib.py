@@ -13,57 +13,20 @@ https://github.com/aldelaro5/Dolphin-memory-engine
 '''
 
 import os
+from psutil import process_iter
 from struct import pack, unpack, calcsize
 from multiprocessing.shared_memory import SharedMemory
 
-if os.name == 'nt':
-  # windows
-  from ctypes import Structure, POINTER, sizeof, byref, windll
-  from ctypes.wintypes import DWORD, ULONG, LONG, CHAR, MAX_PATH
-  kernel32 = windll.kernel32
-  NULL = 0
-  ## https://docs.microsoft.com/ja-jp/windows/win32/api/tlhelp32/ns-tlhelp32-processentry32
-  class PROCESSENTRY32(Structure):
-    _fields_ = [
-      ('dwSize', DWORD),
-      ('cntUsage', DWORD),
-      ('th32ProcessID', DWORD),
-      ('th32DefaultHeapID', POINTER(ULONG)),
-      ('th32ModuleID', DWORD),
-      ('cntThreads', DWORD),
-      ('th32ParentProcessID', DWORD),
-      ('pcPriClassBase', LONG),
-      ('dwFlags', DWORD),
-      ('szExeFile', CHAR*MAX_PATH),
-    ]
-  ## https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot
-  TH32CS_SNAPPROCESS = 2
-  ## find pids of dolphin
-  def find_dolphin():
-    # prepare entry struct
-    entry = PROCESSENTRY32()
-    entry.dwSize = sizeof(PROCESSENTRY32)
-    # prepare snapshot
-    snapshot = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL)
-    # find pids
-    pids = []
-    if kernel32.Process32First(snapshot, byref(entry)):
-      while True:
-        if entry.szExeFile in (b'Dolphin.exe', b'DolphinQt2.exe', b'DolphinWx.exe'):
-          pids.append(entry.th32ProcessID)
-        if not kernel32.Process32Next(snapshot, byref(entry)): break
-    kernel32.CloseHandle(snapshot);
-    # done
-    return pids
-else:
-  # UNIX
-  import psutil
-  def find_dolphin():
-    return [
-      proc.pid
-      for proc in psutil.process_iter()
-      if proc.name() in ('dolphin-emu', 'dolphin-emu-qt2', 'dolphin-emu-wx')
-    ]
+dolphinProcNames = \
+  ('Dolphin.exe', 'DolphinQt2.exe', 'DolphinWx.exe') if os.name == 'nt' \
+  else ('dolphin-emu', 'dolphin-emu-qt2', 'dolphin-emu-wx')
+
+def find_dolphin():
+  return [
+    proc.pid
+    for proc in process_iter()
+    if proc.name() in dolphinProcNames
+  ]
 
 '''
 @typedef {(int|str) | [(int|str), ...int[]]} Addr
