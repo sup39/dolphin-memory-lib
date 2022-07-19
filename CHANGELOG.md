@@ -1,4 +1,8 @@
 # Change Log
+## \[v0.1.2] return reverse order of pids in `find_dolphin()` (2022/07/20)
+- Return pids from the newest to the oldest
+- Add optional self to `Dolphin.find_dolphin()`, making it available to call from instance
+
 ## \[v0.1.1] use psutil to find pid of dolphin (2022/06/26)
 Use psutil to achieve cross-platform pid finding.
 This also fixes the dependency issue on Linux.

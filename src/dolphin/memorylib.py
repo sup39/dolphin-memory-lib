@@ -21,12 +21,12 @@ dolphinProcNames = \
   ('Dolphin.exe', 'DolphinQt2.exe', 'DolphinWx.exe') if os.name == 'nt' \
   else ('dolphin-emu', 'dolphin-emu-qt2', 'dolphin-emu-wx')
 
-def find_dolphin():
+def find_dolphin(self=None):
   return [
     proc.pid
     for proc in process_iter()
     if proc.name() in dolphinProcNames
-  ]
+  ][::-1] # newest to oldest
 
 '''
 @typedef {(int|str) | [(int|str), ...int[]]} Addr
